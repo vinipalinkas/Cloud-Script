@@ -1,3 +1,5 @@
+Connect-AzAccount -UseDeviceAuthentication
+
 $groups = Get-AzADGroup
 $users = Get-AzADUser -Filter "accountEnabled eq false"
 
