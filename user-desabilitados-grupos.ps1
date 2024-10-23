@@ -1,14 +1,13 @@
-foreach ($username in (Get-ADUser -SearchBase "OU=Users_Disabled,DC=seb,DC=com,DC=br" -filter *)) {
+$groups = Get-AzADGroup
+$users = Get-AzADUser -Filter "accountEnabled eq false"
 
-    $groups = get-adprincipalgroupmembership $username;
-
-        foreach ($group in $groups) {
-            if ($group.name -ne "Domain Users" -and $group.name -ne "Licenca_Office_365_Desabilitados") {
-                remove-adgroupmember -Identity $group.name -Member $username.SamAccountName -Confirm:$false;
-                write-host "removido" $username "de" $group.name;
-                
-                    $grouplogfile = "c:\Temp" + $username.SamAccountName + ".txt";
-                    $group.name >> $grouplogfile
+foreach ($user in $users) {
+    $userId = $user.Id
+    foreach ($group in $groups) {
+        $isMember = Get-AzADGroupMember -GroupObjectId $group.Id | Where-Object { $_.Id -eq $userId }
+        
+        if ($isMember -and $group.DisplayName -ne "Domain Users" -and $group.DisplayName -ne "Licenca_Office_365_Desabilitados") {
+            Remove-AzADGroupMember -GroupObjectId $group.Id -MemberObjectId $userId
         }
     }
 }
