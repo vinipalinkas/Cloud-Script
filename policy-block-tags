@@ -1,0 +1,36 @@
+{
+  "mode": "Indexed",
+  "policyRule": {
+    "if": {
+      "allOf": [
+        {
+          "field": "type",
+          "notIn": [
+            "Microsoft.Resources/subscriptions",
+            "Microsoft.Resources/resourceGroups"
+          ]
+        },
+        {
+          "field": "tags['ambiente']",
+          "exists": "false"
+        },
+        {
+          "field": "tags['servicos']",
+          "exists": "false"
+        },
+        {
+          "field": "tags['criador']",
+          "exists": "false"
+        },
+        {
+          "field": "tags['gestor']",
+          "exists": "false"
+        }
+      ]
+    },
+    "then": {
+      "effect": "deny"
+    }
+  },
+  "parameters": {}
+}
