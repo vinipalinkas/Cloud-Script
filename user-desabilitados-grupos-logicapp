@@ -5,12 +5,12 @@
         "triggers": {
             "Recurrence": {
                 "recurrence": {
-                    "interval": 3,
-                    "frequency": "Minute"
+                    "interval": 1,
+                    "frequency": "Hour"
                 },
                 "evaluatedRecurrence": {
-                    "interval": 3,
-                    "frequency": "Minute"
+                    "interval": 1,
+                    "frequency": "Hour"
                 },
                 "type": "Recurrence"
             }
@@ -51,14 +51,7 @@
                         "foreach": "@body('Get_groups_of_a_user_(V2)')?['value']",
                         "actions": {
                             "Check_Protected_Groups": {
-                                "actions": {
-                                    "Log_Skip_Removal": {
-                                        "type": "Compose",
-                                        "inputs": {
-                                            "message": "User removal skipped for protected group: @item()"
-                                        }
-                                    }
-                                },
+                                "actions": {},
                                 "else": {
                                     "actions": {
                                         "Remove_Member_From_Group": {
@@ -87,6 +80,12 @@
                                             "equals": [
                                                 "@item()",
                                                 "cd10da73-a321-4d3c-bac7-32dad7b4dd82"
+                                            ]
+                                        },
+                                        {
+                                            "equals": [
+                                                "@item()",
+                                                "2ce7335a-d59e-44a9-8124-17838f1234de"
                                             ]
                                         }
                                     ]
