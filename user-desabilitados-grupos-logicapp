@@ -1,0 +1,132 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "contentVersion": "1.0.0.0",
+        "triggers": {
+            "Recurrence": {
+                "recurrence": {
+                    "interval": 3,
+                    "frequency": "Minute"
+                },
+                "evaluatedRecurrence": {
+                    "interval": 3,
+                    "frequency": "Minute"
+                },
+                "type": "Recurrence"
+            }
+        },
+        "actions": {
+            "Get_group_members": {
+                "runAfter": {},
+                "type": "ApiConnection",
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['azuread']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v1.0/groups/@{encodeURIComponent('2ce7335a-d59e-44a9-8124-17838f1234de')}/members"
+                }
+            },
+            "For_each": {
+                "foreach": "@body('Get_group_members')?['value']",
+                "actions": {
+                    "Get_groups_of_a_user_(V2)": {
+                        "type": "ApiConnection",
+                        "inputs": {
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['azuread']['connectionId']"
+                                }
+                            },
+                            "method": "post",
+                            "body": {
+                                "securityEnabledOnly": true
+                            },
+                            "path": "/v2/v1.0/users/@{encodeURIComponent(items('For_each')?['id'])}/getMemberGroups"
+                        }
+                    },
+                    "For_each_2": {
+                        "foreach": "@body('Get_groups_of_a_user_(V2)')?['value']",
+                        "actions": {
+                            "Check_Protected_Groups": {
+                                "actions": {
+                                    "Log_Skip_Removal": {
+                                        "type": "Compose",
+                                        "inputs": {
+                                            "message": "User removal skipped for protected group: @item()"
+                                        }
+                                    }
+                                },
+                                "else": {
+                                    "actions": {
+                                        "Remove_Member_From_Group": {
+                                            "type": "ApiConnection",
+                                            "inputs": {
+                                                "host": {
+                                                    "connection": {
+                                                        "name": "@parameters('$connections')['azuread']['connectionId']"
+                                                    }
+                                                },
+                                                "method": "delete",
+                                                "path": "/v1.0/groups/@{encodeURIComponent(item())}/members/@{encodeURIComponent(items('For_each')?['id'])}/$ref"
+                                            }
+                                        }
+                                    }
+                                },
+                                "expression": {
+                                    "or": [
+                                        {
+                                            "equals": [
+                                                "@item()",
+                                                "53c63791-edd9-4b47-a137-d71709da17a7"
+                                            ]
+                                        },
+                                        {
+                                            "equals": [
+                                                "@item()",
+                                                "cd10da73-a321-4d3c-bac7-32dad7b4dd82"
+                                            ]
+                                        }
+                                    ]
+                                },
+                                "type": "If"
+                            }
+                        },
+                        "runAfter": {
+                            "Get_groups_of_a_user_(V2)": [
+                                "Succeeded"
+                            ]
+                        },
+                        "type": "Foreach"
+                    }
+                },
+                "runAfter": {
+                    "Get_group_members": [
+                        "Succeeded"
+                    ]
+                },
+                "type": "Foreach"
+            }
+        },
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "type": "Object",
+                "defaultValue": {}
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "value": {
+                "azuread": {
+                    "id": "/subscriptions/ff8da3df-4a88-44bd-8b8b-4f0e26f117c8/providers/Microsoft.Web/locations/uksouth/managedApis/azuread",
+                    "connectionId": "/subscriptions/ff8da3df-4a88-44bd-8b8b-4f0e26f117c8/resourceGroups/Mateus-Guima_group/providers/Microsoft.Web/connections/azuread-1",
+                    "connectionName": "azuread-1"
+                }
+            }
+        }
+    }
+}

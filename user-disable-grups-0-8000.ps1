@@ -25,7 +25,7 @@ foreach ($group in $groups) {
     $groupMembers[$group.Id] = Get-AzADGroupMember -GroupObjectId $group.Id | Select-Object Id
 }
 
-$currentBatch = $disabledUsers | Select-Object -Firts 4000 # -Skip 4001
+$currentBatch = $disabledUsers | Select-Object
 
 $groupMembership = @{}
 
